@@ -6,18 +6,20 @@ import javax.swing.text.StyleContext.SmallAttributeSet;
 
 class Test {
 	
-
+	ArrayList<Integer> visistedNodes = new ArrayList<Integer>();
 	
     public static void main(String[] args)
+    
     {
-    	String[][] grid =Test.createGrid(5,5,1000);  
+    	Test test = new Test();
+    	String[][] grid =test.createGrid(5,5,1000);  
     	
-    	getNode(grid,5,5);
+    	test.getNode(grid,5,5);
        
     }
     
     
-    public static String[][] createGrid(int x,int y,int n) {
+    public  String[][] createGrid(int x,int y,int n) {
         String[][] colorGrid = new String[x][y];
         String color;
     	for (int i = 0; i < x; i++) {
@@ -40,11 +42,12 @@ class Test {
     }
     
     
-    public static void  getNode(String[][] grid,int x,int y) {
+    public  void  getNode(String[][] grid,int x,int y) {
     	
     	
-     	ArrayList<Integer> visistedNodes = new ArrayList<Integer>();
+     	
     	ArrayList<Integer> largestBlock = new ArrayList<Integer>();
+    	ArrayList<Integer> adjusantBlock = new ArrayList<Integer>();
     	
     	
     	for(int i=0; i<x;i++) {
@@ -54,10 +57,15 @@ class Test {
     			
     			if(!visistedNodes.contains(currentNode)) {
     				visistedNodes.add(currentNode);
+    				adjusantBlock.add(currentNode);
     				ArrayList<Integer> sameColorNodes = new ArrayList<Integer>();
     				sameColorNodes = sameColorNodes(x,y,grid,nodeColor);
     				
-    				largestBlock = getLargestBlock(currentNode, sameColorNodes, visistedNodes, y);
+    				adjusantBlock = getLargestBlock(currentNode, sameColorNodes, visistedNodes, y, adjusantBlock);
+    				
+    				if(adjusantBlock.size() > largestBlock.size()) {
+    					largestBlock = adjusantBlock;
+    				}
     			}
     				
     			
@@ -70,7 +78,7 @@ class Test {
     	
     }
     
-    public static ArrayList<Integer> sameColorNodes(int x, int y,String[][] grid, String color) {
+    public  ArrayList<Integer> sameColorNodes(int x, int y,String[][] grid, String color) {
     	
     	ArrayList<Integer> nodes = new ArrayList<Integer>();
     	
@@ -87,31 +95,34 @@ class Test {
     	return nodes;
     }
     
-	public static ArrayList<Integer> getLargestBlock(int currentNode, ArrayList<Integer> sameColorNodes,ArrayList<Integer> visistedNodes, int y) {
-	    	
-		ArrayList<Integer> output = new ArrayList<Integer>();
-		
+	public  ArrayList<Integer> getLargestBlock(int currentNode, ArrayList<Integer> sameColorNodes,ArrayList<Integer> visistedNodes, int y, ArrayList<Integer> adjusantBlock) {
+	    			
 		int currentX = currentNode/y;
 		int currentY = currentNode%y;
+		
+		ArrayList<Integer> nonvisitedNodes = new ArrayList<Integer>();
 		
 		sameColorNodes.forEach(n->{
 			int tempX = n/y;
 			int tempY = n%y;
 			
-			if(currentX == tempX +1 || currentX == tempX -1 || currentY == tempY +1 || currentY == tempY -1) {
-				output.add(n);
+			if(
+					(visistedNodes.contains(n)) &&
+					(currentY == tempY && ( currentX == tempX -1 || currentX == tempX +1)) ||
+					(currentX == tempX && ( currentY == tempY -1 || currentY == tempY +1)) 
+					) {
+				adjusantBlock.add(n);
 				visistedNodes.add(n);
 				
-			}else {
-				ArrayList<Integer> nonvisitedNodes = new ArrayList<Integer>();
+				nonvisitedNodes = sameColorNodes;
 				nonvisitedNodes.remove(0);
-				output.addAll(getLargestBlock(n,nonvisitedNodes,visistedNodes,y));
+				return getLargestBlock(n,nonvisitedNodes,visistedNodes,y, adjusantBlock);
 			}
 			
 			
 		});
 		
-		return output;
+		return adjusantBlock;
 	    	
 	   }
     
